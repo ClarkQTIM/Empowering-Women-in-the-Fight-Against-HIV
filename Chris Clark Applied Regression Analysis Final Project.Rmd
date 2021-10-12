@@ -1,0 +1,1495 @@
+---
+title: "Empowering Women in the Fight Against HIV"
+author: "Final Project for Math 5387: Applied Regression Analysis by Chris Clark"
+output:
+  pdf_document: default
+  html_document: default
+---
+\newpage
+
+```{r, include=FALSE}
+# Getting libraries I need
+
+library(tibble)
+library(dplyr)
+library(tidyr)
+library("readxl")
+library(faraway)
+library(car)
+
+# Creating a separate data set for each excel sheet. 
+# Then, I need to remove the empty rows at the top and bottom.
+
+dem_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "1. Demographics")
+dem_data=dem_data[6:207,]
+
+childmort_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "2. Child Mortality")
+childmort_data=childmort_data[5:206,]
+
+matnewbornhealth_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "3. Maternal & Newborn Health")
+matnewbornhealth_data=matnewbornhealth_data[6:207,]
+
+childhealth_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "4. Child Health")
+childhealth_data=childhealth_data[8:209,]
+
+HIVAIDSepi_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "5. HIVAIDS Epidemiology")
+HIVAIDSepi_data=HIVAIDSepi_data[6:207,]
+
+HIVAIDSinterv_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "6. HIVAIDS Intervention")
+HIVAIDSinterv_data=HIVAIDSinterv_data[5:206,]
+
+educ_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "10. Education")
+educ_data=educ_data[7:208,]
+
+childprot_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "11. Child Protection")
+childprot_data=childprot_data[7:208,]
+
+adolescent_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "14. Adolescents")
+adolescent_data=adolescent_data[6:207,]
+
+econindic_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "15. Econ. Indicators")
+econindic_data=econindic_data[6:207,]
+
+womeneconemp_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "16. Women's Econ Empowerment")
+womeneconemp_data=womeneconemp_data[6:207,]
+```
+
+```{r, include=FALSE}
+# Country Names
+
+Country<-dem_data$`TABLE 1. DEMOGRAPHICS`
+
+# Numeric Variables
+
+Fertility<-dem_data$`...14`
+Fertility<-as.numeric(Fertility)
+
+Population<-dem_data$`...2`
+Population<-as.numeric(Population)
+
+Urbanpct<-dem_data$`...28`
+Urbanpct<-as.numeric(Urbanpct)
+
+Under5ChildMort<-childmort_data$`...6`
+Under5ChildMort<-as.numeric(Under5ChildMort)
+
+AdolescentBirthRate<-matnewbornhealth_data$`...8`
+AdolescentBirthRate<-as.numeric(AdolescentBirthRate)
+
+AdolescentHIVpct<-HIVAIDSepi_data$`...3`
+AdolescentHIVpct<-as.numeric(AdolescentHIVpct)
+
+FemaleUpperSecEducpct<-educ_data$`...14`
+FemaleUpperSecEducpct<-as.numeric(FemaleUpperSecEducpct)
+
+FemaleChildMarriagepct<-childprot_data$`...10`
+FemaleChildMarriagepct<-as.numeric(FemaleChildMarriagepct)
+
+JustificationWifeBeatingFemalepct<-childprot_data$`...30`
+JustificationWifeBeatingFemalepct<-as.numeric(JustificationWifeBeatingFemalepct)
+
+IntimatePartnerViolencepct<-adolescent_data$`...14`
+IntimatePartnerViolencepct<-as.numeric(IntimatePartnerViolencepct)
+
+FamilyPlanningSatpct<-womeneconemp_data$`...6`
+FamilyPlanningSatpct<-as.numeric(FamilyPlanningSatpct)
+
+# Categorical Variables
+
+SIGI<-womeneconemp_data$`...2`
+```
+
+```{r, include=FALSE}
+df<-data.frame(Country,Fertility,Population,Urbanpct,Under5ChildMort,AdolescentBirthRate,AdolescentHIVpct,FemaleUpperSecEducpct,FemaleChildMarriagepct,JustificationWifeBeatingFemalepct,IntimatePartnerViolencepct,FamilyPlanningSatpct,SIGI)
+```
+
+```{r, include=FALSE}
+# Continuous Variables
+
+df$Fertility[df$Fertility<0]<-NA
+df$Population[df$Population<0]<-NA
+df$Urbanpct[df$Urbanpct<0]<-NA
+df$Under5ChildMort[df$Under5ChildMort<0]<-NA
+df$AdolescentBirthRate[df$AdolescentBirthRate<0]<-NA
+df$AdolescentHIVpct[df$AdolescentHIVpct<0]<-NA
+df$FemaleUpperSecEducpct[df$FemaleUpperSecEducpct<0]<-NA
+df$FemaleChildMarriagepct[df$FemaleChildMarriagepct<0]<-NA
+df$JustificationWifeBeatingFemalepct[df$JustificationWifeBeatingFemalepct<0]<-NA
+df$IntimatePartnerViolencepct[df$IntimatePartnerViolencepct<0]<-NA
+df$FamilyPlanningSatpct[df$FamilyPlanningSatpct<0]<-NA
+
+# Categorical Variables
+
+df$SIGI[df$SIGI<0]<-NA
+```
+
+```{r, include=FALSE}
+# Labeling the Sub-Saharan Countries
+
+Angola<-df[5,]
+Benin<-df[20,]
+Botswana<-df[24,]
+BurkinaFaso<-df[29,]
+Burundi<-df[30,]
+Cameroon<-df[33,]
+CentralAfricanRepublic<-df[35,]
+Chad<-df[36,]
+Congo<-df[41,]
+CotedIvoire<-df[44,]
+Eritrea<-df[59,]
+Eswatini<-df[61,]
+Ethiopia<-df[62,]
+Gabon<-df[66,]
+Gambia<-df[67,]
+Ghana<-df[70,]
+Guinea<-df[74,]
+GuineaBissau<-df[75,]
+Kenya<-df[93,]
+Lesotho<-df[100,]
+Liberia<-df[101,]
+Madagascar<-df[106,]
+Malawi<-df[107,]
+Mali<-df[110,]
+Mauritania<-df[113,]
+Mauritius<-df[114,]
+Mozambique<-df[122,]
+Namibia<-df[124,]
+Niger<-df[130,]
+Nigeria<-df[131,]
+Rwanda<-df[150,]
+Senegal<-df[158,]
+SierraLeone<-df[161,]
+Somalia<-df[166,]
+SouthAfrica<-df[167,]
+Tanzania<-df[193,]
+Togo<-df[180,]
+Uganda<-df[189,]
+Zambia<-df[201,]
+Zimbabwe<-df[202,]
+df_africa<-data.frame(rbind(Angola,Benin,Botswana,BurkinaFaso,Burundi,Cameroon,CentralAfricanRepublic,Chad,Congo,CotedIvoire,Eritrea,Eswatini,Ethiopia,Gabon,Gambia,Ghana,Guinea,GuineaBissau,Kenya,Lesotho,Liberia,Madagascar,Malawi,Mali,Mauritania, Mauritius,Mozambique,Namibia,Niger,Nigeria,Rwanda,Senegal,SierraLeone,Somalia,SouthAfrica,Tanzania,Togo,Uganda,Zambia,Zimbabwe))
+df_africa_num= subset(df_africa, select = -c(Country,SIGI) )
+```
+
+# Part 1: Introduction
+
+In April 1984, the National Cancer Institute announced they had found the cause of AIDS, the retrovirus HTLV-III. In a joint conference with the Pasteur Institute they announced that LAV, discovered some months earlier in 1983, and HTLV-III are identical and the likely cause of AIDS. By this point, the word "AIDS" had entered into the American lexicon. Task forces had already been established in many parts of the world and much of the transmission and risk factors for the disease were understood. In February 1987, the World Health Organization (WHO) launched The Global Program on AIDS to spread awareness of this new disease. In that same year, the Food and Drug Administration began approving the first treatments for the disease. In the decades which followed, victims of the disease suffered stigma, hysteria, violence, ostracism, and more. However, through the combined efforts of awareness campaigns, global programs such as The United States President's Emergency Plan for AIDS Relief (PEPFAR), and dedicated scientific research, many countries managed to, if not eliminate HIV in their borders, confine it to well-defined sub-populations with behaviors that put them in particular risk for contact with virus. In some communities, these sub-populations are intravenous drug users. In others, homosexual men not using protection during risky sexual behavior. 
+
+Despite these scientific and social successes, there are many countries where HIV remains in the general population, spreading principally through heterosexual sexual contact, mother-to-child transmission, or accidents. Most of these countries are in Sub-Saharan Africa. Though the reasoning behind this is well documented and interesting, this project will focus on one particular, though extensive, criteria. Given that in many of these countries, conservative gender roles and norms, and therefore, sexual roles and norms, are prominent, this project will look at the possible connection between Women's Empowerment, taken broadly, and including women's education, domestic violence, access to family planning, and many other markers of Women's Empowerment, and the prevalence of Adolescent HIV, written as the AdolescentHIVpct variable. Though it is the primary focus of this project, we will also explore relationships between Women's Empowerment and Childhood Mortality (Under 5), written as Under5ChildMort.
+
+To do this, we will be analyzing the UNICEF State of the World's Children 2019 data set. Though it is a large data set, we will focus on the following indicators of Women's Empowerment: Fertility (Fertility), Urbanization percent (Urbanpct), Under 5 Child Mortality (Under5ChildMort), Adolescent Birth Rate, or the number of children born in a year to women ages 15-19 (AdolescentBirthRate), Female Upper Secondary Education percent (FemaleUpperSecEducpct), Female Child Marriage Percent (FemaleChildMarriagepct), Justification for Wife Beating by Females, or the percent of women who believe that domestic violence is acceptable (JustificationWifeBeatingFemalepct), Intimate Partner Violence percent (IntimatePartnerViolencepct), Family Planning Satisfaction percent (FamilyPlanningSatpct), and the Social Institutions and Gender Index (SIGI).
+
+From the 200 plus countries in the data set, we will focus on the following: Angola, Benin, Botswana, Burkina Faso, Burundi, Cameroon, Central African Republic, Chad, Congo, Cote d'Ivoire, Eritrea, Eswatini, Ethiopia, Gabon, Gambia, Ghana, Guinea, Guinea-Bissau, Kenya, Lesotho, Liberia, Madagascar, Malawi, Mali, Mauritania, Mauritius, Mozambique, Namibia, Niger, Nigeria, Rwanda, Senegal, Sierra Leone, Somalia, South Africa, United Republic of Tanzania, Togo, Uganda, Zaire, Zambia, and Zimbabwe.
+
+Note that when we build our model for Adolescent HIV, we will be including the Under5ChildMort regressor, but we will not be including the AdolescentHIVpct regressor for our Under 5 Child Mortality models.
+
+References: https://www.avert.org/professionals/history-hiv-aids/overview
+
+Data Set: https://data.unicef.org/resources/dataset/sowc-2019-statistical-tables/
+
+\newpage
+
+# Part 2: Data Exploration
+
+## Density, Pairwise, and Categorical SIGI Plots for our Predictor Variable Adolescent HIV
+
+```{r, echo=FALSE, warning=FALSE, fig.dim = c(6, 4)}
+# Density Plot
+plot(density(df_africa$AdolescentHIVpct, na.rm=TRUE), xlab="Adolescent HIV %", main = "Density of Adolescent HIV")
+
+# Pairwise Plots
+pairs(~ AdolescentHIVpct+ AdolescentBirthRate+ FemaleChildMarriagepct + FemaleUpperSecEducpct + IntimatePartnerViolencepct+FamilyPlanningSatpct, na.action = na.omit, data = df_africa)
+
+# SIGI Plot
+lmHIVSIGI<-lm(AdolescentHIVpct~SIGI, data=df_africa)
+Boxplot(AdolescentHIVpct ~ SIGI, data = df_africa)
+```
+
+From the pairwise plots, though some of the correlations aren't too strong, several, including Intimate Partner Violence and Adolescent HIV, Female Child Marriage and Adolescent Birth Rate, Adolescent Birth Rate and Adolescent HIV, Female Child Marriage and Adolescent HIV and, interestingly enough Female Child Marriage and Female Upper Secondary Education and Family Planing Satisfaction and Adolescent HIV, seem to be positively correlated. Family Planning Satisfaction and Adolescent Birth Rate and Female Child Marriage and Intimate Partner Violence seem to have a negative correlation.
+
+From the Adolescent HIV boxplot, countries with a Low SIGI score have both the largest range of Adolescent HIV prevalence and reach the highest values and those with a score of High or Very High have the lowest Adolescent HIV prevalence. For the Under 5 Child Mortality boxplot, we find the opposite situation, with a High SIGI score giving the largest range of Under 5 Childhood Mortality and a Low SIGI score having the lowest Under 5 Childhood Mortality.
+
+\newpage
+
+# Part 3: Collinearity Checks and Variable Selection
+
+## Collinearity Checks and Variable Selection for Adolescent HIV Model
+
+Our variable selection criteria include a correlation matrix, VIF scores, and a collinearity matrix. These tests identify the regressors SIGI and Female Child Marriage as unnessesary. 
+
+After removing the SIGI and Female Child Marriage regressor, re-ran each tests and got the following results.
+
+We find a large correlation between Family Planning Satisfaction and Under 5 Child Mortality.
+
+Looking at our VIF Score table, we find that all are under 5. 
+
+Looking at our Collinearity Matrix, we find a collinearity between Intimate Partner Violence and Justification Wife Beating Female, though it is small. We will keep these two in.
+
+So, we will maintain the following set of regressors for AdolescentHIVpct: Fertility, Urbanpct, Under5ChildMort, AdolescentBirthRate, FemaleUpperSecEdupct, JustificationWifeBeatingFemalepct, IntimatePartnerViolencepct, and FamilyPlanningSatpct.
+
+The full code showing the collinearity checks and variable selection for our models, including the SIGI and Female Child Marriage regressors, can be found in the Appendix.
+
+## Variable Selection for our Adolescent HIV model
+
+### AIC
+
+Our AIC plot tells us that p=4, or 3 regressors, is the best. From the subsets, we see that the best 3 regressors are: Adolescent Birth Rate, Justification of Wife Beating Female, and Family Planning Satisfaction.
+
+### BIC
+
+From the BIC graph, we find the following regressors are the best: Adolescent Birth Rate, Justification of Wife Beating Female, and Family Planning Satisfaction. This is consistent with the AIC graph.
+
+### Mallow's Cp
+
+From the plot of Mallow's Cp, we see that the model with Fertility, Urban percent, Under 5 Child Mortality, Adolescent Birth Rate, Female Upper Secondary Education, Justification for Wife Beating Female, and Family Planning Satisfaction are the closest to the line (with the exception of the model with all the regressors, which is always the case), and is therefore the best.
+
+### Adjusted $R^2$
+
+Here, the model with the largest $R^2$ value is the one with Adolescent Birth Rate, Justification for Wife Beating Female, and Family Planning Satisfaction.
+
+Given that this exact set of regressors has shown up in the AIC, BIC, and now the Adjusted $R^2$ tests for Model/Structure Selection, we will continue with the following regressors for our Adolescent HIV model: Adolescent Birth Rate, Justification for Wife Beating Female, and Family Planning Satisfaction.
+
+The full plots are available in the Appendix.
+
+\newpage
+
+# Part 4: Structure checking, Identifying Influential Observations, and Checking Error Assumptions
+
+## Structure Checking for our Adolescent HIV model
+
+From the residual plots, it appears as if the Justification for Wife Beating Female, Family Planning Satisfaction, and the Fitted Values have curvature.
+
+We will perform other tests to confirm this. 
+
+Our Marginal Model plot shows similar problems to the Residual Plots, with the Fitted Values, Justification for Wife Beating Female, and Family Planning Satisfaction suspicious,
+
+We will do a Component+Residual Plot to see if we can transform a variable.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.dim = c(6, 4)}
+# Component Plus Residual Plots
+# Our model
+lmHIV<-lm(AdolescentHIVpct~AdolescentBirthRate+JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, data=df_africa)
+
+crPlots(lmHIV)
+```
+
+Our Component Plus Residual plot shows the same issues as the Marginal and Residual plots. We will consult the Mosteller and Tukey's Bulging Rule to transform variables. 
+
+We went through several iterations of transforming regressors and the predictor variable, and ended with a logarithmic transformation for the AdolescentHIVpct predictor variable.
+
+This is our final Component Plus Residual Plot:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.dim = c(6, 4)}
+library(car)
+
+# New model transforming our predictor variable with a log, given that it spans 3 orders of magnitude.
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, data=df_africa)
+
+# Component Plus Residual Plots
+crPlots(lmHIVt)
+```
+
+By taking the log of the predictor variable, AdolescentHIVpct, we have a far better structure. This makes sense, as there are three orders of magnitude for AdolescentHIVpct.
+
+The full plots are available in the Appendix.
+
+## Identifying Influential Observations for our Adolescent HIV model
+
+### Leverage Points for our Adolescent HIV model
+
+````{r, echo=FALSE, warning=FALSE, message=FALSE, fig.dim = c(6, 4)}
+library(car)
+# Transformed Adolescent HIV model 
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, data=df_africa)
+
+# Identifying unusual points
+h <- hatvalues(lmHIVt)
+
+# Creating the Half-norm plot
+halfnorm(h, nlab = 2, labs=df_africa[-1,1], ylab = "leverage")
+
+# index plot of leverage values
+infIndexPlot(lmHIVt, vars = "hat")
+```
+
+Our highest leverage points are the Central African Republic and Mauritius and our highest points on the diagnostic plot are 35 and 122, corresponding to the Central African Republic and Mozambique. So, both tests identified the Central African Republic as a potential leverage point.
+
+### Outliers for our Adolescent HIV model
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.dim = c(6, 4)}
+# Index plot of the studentized residuals and Bonferroni p values
+infIndexPlot(lmHIVt, vars=c("Studentized","Bonf"))
+```
+
+According to the outlier test using Bonferroni correction and the Diagnostic Plots, we have Mauritania as the only outlier identified by both. 
+
+### Influential Points for our Adolescent HIV model
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.dim = c(6, 4)}
+# Getting Cooks Statistics for our Adolescent HIV data
+cook <- cooks.distance(lmHIVt)
+halfnorm(cook, n = 3, labs = df_africa[-1,1], ylab = "Cook's distances")
+
+infIndexPlot(lmHIVt, var = "Cook", id = list(n = 3))
+```
+
+From the Cooks Statistics and distances plots, it appears as if Mauritania is an influential point.
+
+Now, to see the impact of the Central African Republic and Mauritania, the countries identified by our tests, we will compare two models side by side, a full model one with these two data points removed.
+
+From comparing the two models, we see similar regressor coefficients, so we will leave these two observations in our data set. 
+
+The full output is included in the Appendix.
+
+## Checking Error Assumptions
+
+### Checking mean-zero error and nonconstant variance assumptions for our Adolescent HIV model
+
+From our plots of residuals versus fitted values and Pearson residuals, though we have a few higher points, such as Mauritania and Niger, our plots look overall symmetric and random. 
+
+### Checking normal error assumption for our Adolescent HIV model
+
+For this, we look to our QQ plots and Shapiro test. Here, we have run into a problem. It seems as if countries such as Mauritania, Niger, and Burkina Faso are making it so we fail the non-constant variance assumption. However, after looking at df_africa, we see what is happening. These countries have very small Adolescent HIV prevalences, almost 0. So, if we remove those from our model, as we are mainly interested in the impact of Women's Empowerment on Adolescent HIV, we will see what happens.
+
+### Checking mean-zero error and nonconstant variance assumptions for our Adolescent HIV model without the three countries with the lowest (almost 0%) Adolescent HIV
+
+From our plots of residuals versus fitted values and Pearson residuals, we still pass our mean-zero error and nonconstant variance assumptions.
+
+### Checking normal error assumption for our Adolescent HIV model without the three countries with the lowest (almost 0%) Adolescent HIV
+
+After recreating our model without the three countries with the lowest HIV, Mauritania, Niger, and Burkina Faso, our QQ plots look a bit better and the Shapiro test returns a p-value of 0.1056. Thus, there is insufficient evidence to conclude that the residuals come from a non-normal distribution. However, we note that the various graphs are not perfect and indicate a possible violation of the normal errors assumptions. 
+
+To remain faithful to the dataset, we will keep these points in. Though our normal errors assumption is better with these three countries removed, we will continue with them in and note at the end how we will need to treat our confidence intervals.
+
+### Checking autocorrelated error assumption for our Adolescent HIV model
+
+We ran a Durbin-Watson test and have a p-value of 0.6239. As it is greater than 0.05, there is insufficient evidence to reject the null hypothesis that there is no correlation between the errors.
+
+The full plots can be found in the Appendix.
+
+\newpage
+
+# Part 5: Interpreting Results
+
+## Interpreting results for our Adolescent HIV model
+
+### The Fitted Equation and Coefficient Interpretation
+
+First, we must write down the Fitted Equation, which we got from a summary of our final model.
+
+$\hat{log(AdolescentHIVpct)}=-3.974014+0.013354 (AdolescentBirthRate)  -0.006902 (JustificationWifeBeatingFemalepct) +  0.051221 (FamilyPlanningSatpct)$
+
+Now, we note that this is a Log-level model. We interpret the coefficients one-by-one, assuming that the other regressors do not change.
+
+In plain terms, if the annual number of births to women 15 to 19 years of age per 1,000 women in that age group increases by 1, Adolescent HIV prevalence will increase by $1.344$%.
+
+In plain terms, if the percent of women who agree that domestic violence is justified increases by 1 percent, Adolescent HIV will increase by $0.6878$%.
+
+In plain terms, if the percent of women who are satisfied by the available family planning increases by 1 percent, the Adolescent HIV prevalence will increase by $5.265$%.
+
+### Confidence Intervals
+
+We find the following confidence intervals. We will round outward to three decimal places to be as inclusive of our interval as possible.
+Intercept: [-6.245,-1.703] 
+AdolescentBirthRate: [0.003,0.024]
+JustificationWifeBeatingFemalepct: [-0.033,0.020]
+FamilyPlanningSatpct: [0.028,0.075]
+
+We note here that because we have problems with our model structure, such as the normal errors assumption, we have less confidence in the validity of these intervals. However, because of the Central Limit Theorem, as the number of countries increases, (n increases), we know that these confidence intervals will become more accurate.
+
+Now, we will explore our confidence intervals.
+
+### Effects Plots for our Adolescent HIV model on their original axes
+
+```{r, echo=FALSE, warning=FALSE, fig.dim = c(6, 4)}
+library(effects)
+
+# Effects plots
+plot(Effect(c("AdolescentBirthRate"), mod =lmHIVt), 
+     main="Effect Plot for AdolescentBirthRate on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+
+plot(Effect(c("JustificationWifeBeatingFemalepct"), mod =lmHIVt), 
+     main="Effect Plot for JustificationWifeBeatingFemalepct on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+
+plot(Effect(c("FamilyPlanningSatpct"), mod =lmHIVt), 
+     main="Effect Plot for FamilyPlanningSatpct on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+```
+
+## Interpreting results for our Under 5 Child Mortality model
+
+All model-building done for the Adolescent HIV model was also done for the Under 5 Child Mortality model, and is included in the Appendix. Here, we jump to the final model and its interpretation.
+
+### The Fitted Equation and Coefficient Interpretation
+
+The fitted equation for our Under 5 Child Mortality Model is: 
+
+$\hat{Under5ChildMort}=-19.8330-0.2254 (Urbanpct) +32.6649 log(AdolescentBirthRate) -8.0705 \sqrt{FamilyPlanningSatpct}$
+
+We will interpret each regressor coefficient in turn, assuming that the other regressors do not change.
+
+We have not transformed the Urbanpct regressor, so this is Level-level in this regressor. Thus, a change of 1 unit in the Urbanpct will result in a decrease of $-0.2254$ in Under 5 Child Mortality. If the percentage of urban population increase by 1 percent, the Under 5 Child Mortality of that country will decrease by $0.2254$.
+
+In the AdolescentBirthRate regressor, we have a Level-log model. Thus, a change of 1 percent in the AdolescentBirthRate regressor will result in a $32.6649/100=0.326649$ increase in Under 5 Child Mortality. If the Adolescent Birth Rate increases by 1 percent, then the Under 5 Child Mortality will increase by $0.326649$.
+
+Square Root FamilyPlanningSatpct is more difficult to interpret numerically, but the Effects Plots included in the Appendix will help us. Note that we must transform back to the original scales for AdolescentBirthRate and FamilyPlanningSatpct.
+
+# Part 6: Conclusions
+
+We begin with our Adolescent HIV model. We see several things we expected to see, that Adolescent Birth Rate is positively correlated with Adolescent HIV prevalence and that violence against women, measured here as Female Justification for Wife Beating, has a similar relationship to Adolescent HIV. The most straightforward conclusion to draw from these two facts is that in order to reduce Adolescent HIV, we need to focus on reducing the Adolescent Birth rate (which can mean many things, such as delaying first sexual encounters until women are more informed and ready, reducing child marriage, and more) and that violence against women, even when they themselves justify it, fosters an environment in which women have less control over their sexuality and bodily autonomy, and thus, are more susceptible to contracting, and then transmitting, HIV.
+
+The last regressor variable, Family Planning Satisfaction, is a bit more interesting. One might think that when women are satisfied with their family planning options, that would mean they are using protection and are overall more empowered to choose when and with whom they engage in sexual activities. That would still be this researcher's assumption. However, this result seems to contradict that. There is a different interpretation, though. In places where women do not have access to satisfactory family planning, it stands to reason that they also do not have access to HIV testing (nor do their male peers). If this is the case, it is possible that there is a large number of adolescents with undetected HIV (and in fact, this is a known problem for HIV/AIDS researchers). 
+
+So, this last regressor coefficient should be explored in more detail in a subsequent study to determine if family planning does contribute to Adolescent HIV or if there is a more complicated, hidden relationship interfering with our interpretation.
+
+For the Under 5 Child Mortality, we find essentially what we expected, that there is a negative correlation with Under 5 Child Mortality and urbanization and Family Planning Satisfaction, and a positive correlation between Adolescent Birth Rate and Under 5 Child Mortality. Simple biology corroborates this second point. Young women have particular dangers when giving birth and in the immediate aftermath, and those dangers translate to their newborns, as well. Also, young women are typically not in a position financially or socially to properly provide for their children in a way that with further development, education, etc, they would then be able to provide. Thus, children of younger mothers are often at a disadvantage from the beginning, and this affects their survival rate.
+
+Family Planning Satisfaction and urbanization can be thought of as connected. Though urbanization carries many risks for young women, it also opens up access to clinics for family planning, doctors and medicine for their children, education, and many resources that come with development. It is no surprise, for this researcher, that these two results appeared together. 
+
+Thus, from our model, we can conclude that to decrease Under 5 Child Mortality, we should be focusing on economic development and opportunities provided by larger cities, increasing the age at which women have children by reducing child marriage and fostering an environment where young women can choose when with whom they engage in sexual activites, and increase assess to family planning so they can decide of their own accord if and when they will begin families.
+
+In this analysis, we have begun to tease out the relationships between several markers of Women's Empowerment and Adolescent HIV and Under 5 Child Mortality. Our initial results suggest that by empowering women with sexual and bodily autonomy and reducing violence, we can decrease Adolescent HIV and by increasing economic development and the equitable distribution of opportunities that follow from it, such as access to family planning, we can reduce the Under 5 Child Mortality in the Sub-Saharan African countries represented in this research. 
+
+\newpage
+
+# Appendix
+
+## Creating our data frame
+
+### Setting up the data from the source
+
+#### Pulling our data from the initial excel data page
+
+```{r, warning=FALSE}
+# Getting libraries I need
+
+library(tibble)
+library(dplyr)
+library(tidyr)
+library("readxl")
+library(faraway)
+
+# Creating a separate data set for each excel sheet. 
+# Then, I need to remove the empty rows at the top and bottom.
+
+dem_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "1. Demographics")
+dem_data=dem_data[6:207,]
+
+childmort_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "2. Child Mortality")
+childmort_data=childmort_data[5:206,]
+
+matnewbornhealth_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "3. Maternal & Newborn Health")
+matnewbornhealth_data=matnewbornhealth_data[6:207,]
+
+childhealth_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "4. Child Health")
+childhealth_data=childhealth_data[8:209,]
+
+HIVAIDSepi_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "5. HIVAIDS Epidemiology")
+HIVAIDSepi_data=HIVAIDSepi_data[6:207,]
+
+HIVAIDSinterv_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "6. HIVAIDS Intervention")
+HIVAIDSinterv_data=HIVAIDSinterv_data[5:206,]
+
+educ_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "10. Education")
+educ_data=educ_data[7:208,]
+
+childprot_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "11. Child Protection")
+childprot_data=childprot_data[7:208,]
+
+adolescent_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "14. Adolescents")
+adolescent_data=adolescent_data[6:207,]
+
+econindic_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "15. Econ. Indicators")
+econindic_data=econindic_data[6:207,]
+
+womeneconemp_data<-read_excel("C:/Users/chris/OneDrive/Documents/CU Denver Statistics/Applied Regression Analysis/Project\\SOWC-Statistical-tables-ALL-2019.xlsx",sheet = "16. Women's Econ Empowerment")
+womeneconemp_data=womeneconemp_data[6:207,]
+```
+
+### Parsing to get our data frame
+
+#### Choosing the columns from the excel pages and converting the numeric variables into true numbers in R
+
+```{r, warning=FALSE}
+# Country Names
+
+Country<-dem_data$`TABLE 1. DEMOGRAPHICS`
+
+# Numeric Variables
+
+Fertility<-dem_data$`...14`
+Fertility<-as.numeric(Fertility)
+
+Population<-dem_data$`...2`
+Population<-as.numeric(Population)
+
+Urbanpct<-dem_data$`...28`
+Urbanpct<-as.numeric(Urbanpct)
+
+Under5ChildMort<-childmort_data$`...6`
+Under5ChildMort<-as.numeric(Under5ChildMort)
+
+AdolescentBirthRate<-matnewbornhealth_data$`...8`
+AdolescentBirthRate<-as.numeric(AdolescentBirthRate)
+
+AdolescentHIVpct<-HIVAIDSepi_data$`...3`
+AdolescentHIVpct<-as.numeric(AdolescentHIVpct)
+
+FemaleUpperSecEducpct<-educ_data$`...14`
+FemaleUpperSecEducpct<-as.numeric(FemaleUpperSecEducpct)
+
+FemaleChildMarriagepct<-childprot_data$`...10`
+FemaleChildMarriagepct<-as.numeric(FemaleChildMarriagepct)
+
+JustificationWifeBeatingFemalepct<-childprot_data$`...30`
+JustificationWifeBeatingFemalepct<-as.numeric(JustificationWifeBeatingFemalepct)
+
+IntimatePartnerViolencepct<-adolescent_data$`...14`
+IntimatePartnerViolencepct<-as.numeric(IntimatePartnerViolencepct)
+
+FamilyPlanningSatpct<-womeneconemp_data$`...6`
+FamilyPlanningSatpct<-as.numeric(FamilyPlanningSatpct)
+
+# Categorical Variables
+
+SIGI<-womeneconemp_data$`...2`
+```
+#### Combining our set to create our data frame
+
+```{r, warning=FALSE}
+df<-data.frame(Country,Fertility,Population,Urbanpct,Under5ChildMort,AdolescentBirthRate,
+               AdolescentHIVpct,FemaleUpperSecEducpct,FemaleChildMarriagepct,
+               JustificationWifeBeatingFemalepct,IntimatePartnerViolencepct,FamilyPlanningSatpct,SIGI)
+```
+
+#### Cleaning up our data frame and removing blank spaces
+
+```{r, warning=FALSE}
+# Continuous Variables
+
+df$Fertility[df$Fertility<0]<-NA
+df$Population[df$Population<0]<-NA
+df$Urbanpct[df$Urbanpct<0]<-NA
+df$Under5ChildMort[df$Under5ChildMort<0]<-NA
+df$AdolescentBirthRate[df$AdolescentBirthRate<0]<-NA
+df$AdolescentHIVpct[df$AdolescentHIVpct<0]<-NA
+df$FemaleUpperSecEducpct[df$FemaleUpperSecEducpct<0]<-NA
+df$FemaleChildMarriagepct[df$FemaleChildMarriagepct<0]<-NA
+df$JustificationWifeBeatingFemalepct[df$JustificationWifeBeatingFemalepct<0]<-NA
+df$IntimatePartnerViolencepct[df$IntimatePartnerViolencepct<0]<-NA
+df$FamilyPlanningSatpct[df$FamilyPlanningSatpct<0]<-NA
+
+# Categorical Variables
+
+df$SIGI[df$SIGI<0]<-NA
+```
+
+#### Labeling the Sub-Saharan Countries
+
+According to UNICEF, they are the following: Angola, Benin, Botswana, Burkina Faso, Burundi, Cameroon, Central African Republic, Chad, Congo, Cote d'Ivoire, Eritrea, Ethiopia, Gabon, Gambia, Ghana, Guinea, Guinea-Bissau, Kenya, Lesotho, Liberia, Madagascar, Malawi, Mali, Mauritania, Mauritius, Mozambique, Namibia, Niger, Nigeria, Rwanda, Senegal, Sierra Leone, Somalia, South Africa, United Republic of Tanzania, Togo, Uganda, Zaire, Zambia, Zimbabwe.
+
+Note, we added Eswatini, as it is in the geographical region and we are not including Zaire/Democratic Rebublic of the Congo, as we have no data for that country.
+
+```{r, warning=FALSE}
+Angola<-df[5,]
+Benin<-df[20,]
+Botswana<-df[24,]
+BurkinaFaso<-df[29,]
+Burundi<-df[30,]
+Cameroon<-df[33,]
+CentralAfricanRepublic<-df[35,]
+Chad<-df[36,]
+Congo<-df[41,]
+CotedIvoire<-df[44,]
+Eritrea<-df[59,]
+Eswatini<-df[61,]
+Ethiopia<-df[62,]
+Gabon<-df[66,]
+Gambia<-df[67,]
+Ghana<-df[70,]
+Guinea<-df[74,]
+GuineaBissau<-df[75,]
+Kenya<-df[93,]
+Lesotho<-df[100,]
+Liberia<-df[101,]
+Madagascar<-df[106,]
+Malawi<-df[107,]
+Mali<-df[110,]
+Mauritania<-df[113,]
+Mauritius<-df[114,]
+Mozambique<-df[122,]
+Namibia<-df[124,]
+Niger<-df[130,]
+Nigeria<-df[131,]
+Rwanda<-df[150,]
+Senegal<-df[158,]
+SierraLeone<-df[161,]
+Somalia<-df[166,]
+SouthAfrica<-df[167,]
+Tanzania<-df[193,]
+Togo<-df[180,]
+Uganda<-df[189,]
+Zambia<-df[201,]
+Zimbabwe<-df[202,]
+df_africa<-data.frame(rbind(Angola,Benin,Botswana,BurkinaFaso,Burundi,Cameroon,CentralAfricanRepublic,Chad,Congo,CotedIvoire,Eritrea,Eswatini,Ethiopia,Gabon,Gambia,Ghana,Guinea,GuineaBissau,Kenya,Lesotho,Liberia,Madagascar,Malawi,Mali,Mauritania, Mauritius,Mozambique,Namibia,Niger,Nigeria,Rwanda,Senegal,SierraLeone,Somalia,SouthAfrica,Tanzania,Togo,Uganda,Zambia,Zimbabwe))
+df_africa_num= subset(df_africa, select = -c(Country,SIGI) )
+```
+
+## Data Exploration
+
+### Density Plots for our Predictor Variables
+
+```{r, warning=FALSE}
+plot(density(df_africa$AdolescentHIVpct, na.rm=TRUE), 
+     xlab="Adolescent HIV %", main = "Density of Adolescent HIV")
+plot(density(df_africa$Under5ChildMort, na.rm=TRUE), 
+     xlab="Under 5 Child Mortality", main = "Density of Under 5 Childhood Mortality")
+```
+
+### Pairwise plots for some of our most likely significant regressors for Adolescenct HIV
+
+```{r, warning=FALSE}
+pairs(~ AdolescentHIVpct+ AdolescentBirthRate+ 
+        FemaleChildMarriagepct + FemaleUpperSecEducpct + 
+        IntimatePartnerViolencepct+
+        FamilyPlanningSatpct, na.action = na.omit, data = df_africa)
+```
+From the pairwise plots, though some of the correlations aren't too strong, several, including Intimate Partner Violence and Adolescent HIV, Female Child Marriage and Adolescent Birth Rate, Adolescent Birth Rate and Adolescent HIV, Female Child Marriage and Adolescent HIV and, interestingly enough Female Child Marriage and Female Upper Secondary Education and Family Planing Satisfaction and Adolescent HIV, seem to be positively correlated. Family Planning Satisfaction and Adolescent Birth Rate and Female Child Marriage and Intimate Partner Violence seem to have a negative correlation.
+
+### Pairwise plots for some of our most likely significant regressors for Under 5 Child Mortality
+
+```{r, warning=FALSE}
+pairs(~ Under5ChildMort+ AdolescentBirthRate+ FemaleChildMarriagepct + 
+        FemaleUpperSecEducpct + IntimatePartnerViolencepct+
+        FamilyPlanningSatpct, na.action = na.omit, data = df_africa)
+```
+From the pairwise scatter plot, we see several correlations between the variables. For positive correlations, we find Under 5 Child Mortality and Adolescent Birth Rate, Female Child Marriage, and a possibly very weak one with Female Upper Secondary Education. For negative correlations, we see one between Under 5 Child Mortality and Family Planning Satisfaction.
+
+### Categorical SIGI Plots
+
+```{r, warning=FALSE}
+library(car)
+
+# Adolescent HIV
+lmHIVSIGI<-lm(AdolescentHIVpct~SIGI, data=df_africa)
+Boxplot(AdolescentHIVpct ~ SIGI, data = df_africa)
+
+# Under 5 Child Mortality
+lmChildMortSIGI<-lm(Under5ChildMort~SIGI, data=df_africa)
+Boxplot(Under5ChildMort~SIGI, data=df_africa)
+```
+
+From the Adolescent HIV boxplot, countries with a Low SIGI score have both the largest range of Adolescent HIV prevalence and reach the highest values and those with a score of High or Very High have the lowest Adolescent HIV prevalence. For the Under 5 Child Mortality boxplot, we find the opposite situation, with a High SIGI score giving the largest range of Under 5 Childhood Mortality and a Low SIGI score having the lowest Under 5 Childhood Mortality.
+
+## Collinearity Checks and Variable Selection
+
+### Collinearity Checks and Variable Selection for Adolescent HIV Model
+
+```{r, warning=FALSE}
+library(car)
+library(perturb)
+
+# Creating our full model
+lmHIV<-lm(AdolescentHIVpct ~.-Country-Population, data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmHIV)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmHIV)
+
+# Condition Numbers.
+colldiag(model.matrix(AdolescentHIVpct~.-Country-Population, 
+                      data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+From the correlation matrix, the largest correlations are between Under 5 Child Mortality and Family Planning Satisfaction and Adolescent Birth Rate and Female Child Marriage, 
+
+From the VIF Scores, nearly all the VIF scores are above 5.
+
+From the collinearity matrix, Under 5 Child Mortality and Low and Medium SIGI are problematic.
+
+We will remove Female Child Marriage and run the checks again.
+
+```{r, warning=FALSE}
+library(car)
+library(perturb)
+
+# Creating our model without FemaleChildMarriagepct
+lmHIV<-lm(AdolescentHIVpct ~.-Country-Population-FemaleChildMarriagepct, data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmHIV)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmHIV)
+
+# Condition Numbers.
+colldiag(model.matrix(AdolescentHIVpct~.-Country-Population-FemaleChildMarriagepct, 
+                      data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+After removing the Female Child Marriage regressor, we find a large correlation between Family Planning Satisfaction and Under 5 Child Mortality.
+
+Looking at the VIF Scores, they are much more reasonable.
+
+Looking at the collinearity matrix, there is a collinearity between Intimate Partner Violence and Family Planning Satisfaction along with SIGI Low and Medium.
+
+We will remove SIGI and check again.
+
+```{r, warning=FALSE}
+library(car)
+library(perturb)
+
+# Creating our model without SIGI and FemaleChildMarriagepct
+lmHIV<-lm(AdolescentHIVpct ~.-Country-Population-FemaleChildMarriagepct-SIGI, data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmHIV)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmHIV)
+
+# Condition Numbers.
+colldiag(model.matrix(AdolescentHIVpct~.-Country-Population-FemaleChildMarriagepct-SIGI, 
+                      data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+After removing the SIGI regressor, we find a large correlation between Family Planning Satisfaction and Under 5 Child Mortality.
+
+Looking at our VIF Score table, we find that all are under 5. 
+
+Looking at our collinearity matrix, we find a collinearity between Intimate Partner Violence and Justification Wife Beating Female, though it is small. We will keep these two in.
+
+So, we will maintain the following set of regressors for AdolescentHIVpct: Fertility, Urbanpct, Under5ChildMort, AdolescentBirthRate, FemaleUpperSecEdupct, JustificationWifeBeatingFemalepct, IntimatePartnerViolencepct, and FamilyPlanningSatpct.
+
+### Collinearity Checks and Variable Selection for Under 5 Child Mortality Model
+
+```{r, warning=FALSE}
+library(car)
+
+# Our full model
+lmChildMort<-lm(Under5ChildMort ~.-Country-Population-AdolescentHIVpct, data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmChildMort)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmChildMort)
+
+# Condition Numbers.
+colldiag(model.matrix(Under5ChildMort~.-Country-Population -AdolescentHIVpct, 
+                      data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+From the correlation matrix, we see that the highest values are between Adolescent Birth Rate and Female Child Marriage.
+
+From the VIF Scores, we find that many of them are over 10. We will remove the regressor with the highest, FemaleChildMarriagepct.
+
+From the collinearity matrix, we see a slight collinearity between Urbanpct and Adolescent Birth Rate.
+
+We will remove the regressor with the highest VIF score, FemaleChildMarriagepct, and run the checks again.
+
+```{r, warning=FALSE}
+library(car)
+
+# Creating our model without FemaleChildMarriagepct
+lmChildMort<-lm(Under5ChildMort ~.-Country-Population-AdolescentHIVpct-FemaleChildMarriagepct, 
+                data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmChildMort)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmChildMort)
+
+# Condition Numbers.
+colldiag(model.matrix(Under5ChildMort~.-Country-Population -AdolescentHIVpct -FemaleChildMarriagepct , 
+                      data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+From the correlation matrix, we find no strong correlations.
+
+From the VIF Scores, we find that they are far more resonable, but several are still above 5. 
+
+From the collinearity matrix, we find a collinearity between Family Planning Satisfaction and SIGI scores, as well as the intercept and Fertility. 
+
+We will remove SIGI and run the checks again.
+
+```{r, warning=FALSE}
+library(car)
+
+# Our model without SIGI and FemaleChildMarriagepct
+lmChildMort<-lm(Under5ChildMort ~.-Country-Population-AdolescentHIVpct-FemaleChildMarriagepct-SIGI, 
+                data=df_africa)
+
+# Extract X matrix from model
+x = model.matrix(lmChildMort)
+x = x[,-1] # remove intercept
+
+# Correlation matrix
+round(cor(x), 2)
+
+# Variance Inflation Factor
+vif(lmChildMort)
+
+# Condition Numbers
+colldiag(model.matrix(Under5ChildMort~.-Country-Population -AdolescentHIVpct -FemaleChildMarriagepct 
+                      -SIGI, data=df_africa), add.intercept=F, scale=F)
+# In rows where the first column is over thirty, 
+# we look for pairs of regressors with values over .5.
+```
+
+From the correlation matrix, we see no strong correlations.
+
+From the VIF Score table, we find all are below 5. We will maintain the following regressors for the Under5ChildMort predictor variable: Fertility, Urbanpct, AdolescentBirthRate, FemaleUpperSecEducpct, JustificationWifeBeatingFemalepct, IntimatePartnerViolencepct, and FamilyPlanningSatpct.
+
+From the collinearity matrix, we find a collinearity between Fertility and the intercept. 
+
+We will maintain the following regressors for the Under5ChildMort predictor variable: Fertility, Urbanpct, AdolescentBirthRate, FemaleUpperSecEducpct, JustificationWifeBeatingFemalepct, IntimatePartnerViolencepct, and FamilyPlanningSatpct.
+
+### Variable Selection for our Adolescent HIV model
+
+#### AIC
+
+```{r, warning=FALSE}
+library(leaps)
+
+# Model selection by Exhaustive Search
+b <- regsubsets(AdolescentHIVpct ~.-Country-Population-FemaleChildMarriagepct-SIGI, 
+                data=df_africa)
+
+# Summary of the model that minimizes RSS for each p.
+rs <- summary(b)
+
+# Best subset models (in terms of RSS)
+rs$which
+```
+
+```{r, warning=FALSE}
+# Calculate AIC of each model
+
+# Creating our model with our final variables found in the previous section
+lmHIV<-lm(AdolescentHIVpct ~.-Country-Population-FemaleChildMarriagepct-SIGI, 
+          data=df_africa)
+
+# We have to do this, as there is no AIC in this package
+n = nobs(lmHIV)
+
+# Creating our AIC by hand:
+aic <- n*log(rs$rss/n) + 2*(2:9)
+
+# Plotting AIC vs p
+plot(2:9, aic, xlab = "p", ylab = "AIC")
+```
+This tells us that p=4, or 3 regressors, is the best. From the subsets above, we see that the best 3 regressors are: Adolescent Birth Rate, Justification of Wife Beating, and Family Planning Satisfaction.
+
+#### BIC
+
+```{r, warning=FALSE}
+library(car)
+
+# Calculate BIC of each model and plot BIC vs p
+subsets(b, statistic = "bic", legend = FALSE)
+```
+From the graph, we find the following regressors are the best: Adolescent Birth Rate, Justification of Wife Beating, and Family Planning Satisfaction. This is consistent with the AIC graph above.
+
+#### Mallow's Cp
+
+```{r, warning=FALSE}
+# Construct Cp Plot
+subsets(b, statistic = "cp", legend = FALSE)
+abline(1, 1)
+```
+From the plot of Mallow's Cp, we see that the model with Fertility, Urban percent, Under 5 Child Mortality, Adolescent Birth Rate, Female Upper Secondary Education, Justification for Wife Beating Female, and Family Planning Satisfaction are the closest to the line (with the exception of the model with all the regressors, which is always the case), and is therefore the best.
+
+#### Adjusted $R^2$
+
+```{r, warning=FALSE}
+# Construct adjusted R^2 Plot
+subsets(b, statistic = "adjr2", legend = FALSE)
+```
+Here, the model with the largest $R^2$ value is the one with Adolescent Birth Rate, Justification for Wife Beating Female, and Family Planning Satisfaction.
+
+Given that this exact set of regressors has shown up in the AIC, BIC, and now the Adjusted $R^2$ tests for Model/Structure Selection, we will continue with the following regressors for our Adolescent HIV model: Adolescent Birth Rate, Justification for Wife Beating Female, and Family Planning Satisfaction.
+
+### Variable Selection for our Under 5 Child Mortality model
+
+#### AIC
+
+```{r, warning=FALSE}
+library(leaps)
+# Model selection by Exhaustive Search
+b <- regsubsets(Under5ChildMort ~.-Country-Population-AdolescentHIVpct-FemaleChildMarriagepct-
+                  SIGI, data=df_africa)
+
+# Summary of the model that minimizes RSS for each p.
+rs <- summary(b)
+
+# Best subset models (in terms of RSS)
+rs$which
+```
+
+```{r, warning=FALSE}
+# Calculate AIC of each model
+
+# Creating our model with our final variables found in the previous section
+lmChildMort<-lm(Under5ChildMort ~.-Country-Population-AdolescentHIVpct-FemaleChildMarriagepct-
+                  SIGI, data=df_africa)
+
+# We have to do this, as there is no AIC in this package
+n = nobs(lmChildMort)
+
+# Creating our AIC by hand:
+aic <- n*log(rs$rss/n) + 2*(2:8)
+
+# Plotting AIC vs p
+plot(2:8, aic, xlab = "p", ylab = "AIC")
+```
+From our AIC plot, we find that p=3, or two regressors, is the best. Consulting the subset table above, this corresponds to Adolescent Birth Rate and Family Planning Satisfaction.
+
+#### BIC
+
+```{r, warning=FALSE}
+library(car)
+
+# Calculate BIC of each model and plot BIC vs p
+subsets(b, statistic = "bic", legend = FALSE)
+```
+From the BIC plot, we find that the best regressors are Adolescent Birth Rate and Family Planning Satisfaction.
+
+#### Mallow's Cp
+
+```{r, warning=FALSE}
+# Construct Cp Plot
+subsets(b, statistic = "cp", legend = FALSE)
+abline(1, 1)
+```
+From the Mallow's Cp plot, we see that Fertility, Urban percent, Adolescent Birth Rate, Female Upper Secondary Education, Justification for Wife Beating Female, and Family Planning Satisfaction are the best regressors.
+
+#### Adjusted $R^2$
+
+```{r, warning=FALSE}
+# Construct adjusted R^2 Plot
+subsets(b, statistic = "adjr2", legend = FALSE)
+```
+From the Adjusted $R^2$ plot, we find that the best regressors are Urban percent, Adolescent Birth Rate, and Family Planning Satisfaction.
+
+Given that two model selection criteria gave Adolescent Birth Rate and Family Planning Satisfaction, and the other two include Urban percent, we will maintain these three regressors for our Under 5 Child Mort model.
+
+## Structure checking, Identifying Influential Observations, and Checking Error Assumptions
+
+### Structure Checking for our Adolescent HIV model
+
+```{r, warning=FALSE}
+library(car)
+# Residual Plots
+
+# Our model
+lmHIV<-lm(AdolescentHIVpct~AdolescentBirthRate+JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, 
+          data=df_africa)
+
+# Residual Plots
+residualPlots(lmHIV)
+```
+From the residual plots, it appears as if the Justification for Wife Beating Female, Family Planning Satisfaction, and the Fitted Values have curvature.
+
+We will perform other tests to confirm this. 
+
+```{r, warning=FALSE}
+# Marginal Model Plots
+marginalModelPlots(lmHIV)
+```
+Our Marginal Model plot shows similar problems to the Residual Plots, with the Fitted Values, Justification for Wife Beating Female, and Family Planning Satisfaction suspicious.
+
+We will do a Component+Residual Plot to see if we can transform a variable.
+
+```{r, warning=FALSE}
+# Component Plus Residual Plots
+crPlots(lmHIV)
+```
+Our Component Plus Residual plot shows the same issues as the Marginal and Residual plots. We will consult the Mosteller and Tukey's Bulging Rule to transform variables.
+
+```{r, warning=FALSE}
+library(car)
+
+# New model transforming our predictor variable with a log, given that it spans 3 orders of magnitude.
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, 
+           data=df_africa)
+
+# Component Plus Residual Plots
+crPlots(lmHIVt)
+```
+By taking the log of the predictor variable, AdolescentHIVpct, we have a far better structure. This makes sense, as there are three orders of magnitude for AdolescentHIVpct.
+
+### Structure Checking for our Under 5 Child Mortality model
+
+````{r, warning=FALSE}
+library(car)
+# Residual Plots
+
+# Our model
+lmChildMort<-lm(Under5ChildMort~Urbanpct+AdolescentBirthRate+FamilyPlanningSatpct, 
+                data=df_africa)
+
+# Residual Plots
+residualPlots(lmHIV)
+```
+Our Residual Plots show some structural issues.
+
+```{r, warning=FALSE}
+# Marginal Model Plots
+marginalModelPlots(lmChildMort)
+```
+Our Marginal Plots show some issues, as well.
+
+```{r, warning=FALSE}
+# Component Plus Residual Plots
+crPlots(lmChildMort)
+```
+Our Component Plus Residual Plots show that some transformations are needed.
+
+```{r, warning=FALSE}
+# Our transformed Under 5 Child Mortality model
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+I(FamilyPlanningSatpct^(1/2)), 
+                 data=df_africa)
+
+# Component Plus Residual Plots
+crPlots(lmChildMortt)
+```
+By taking the log of AdolescentBirthRate, and the square root of FamilyPlanningSatpct, we have a much better fit.
+
+### Identifying Influential Observations for our Adolescent HIV model
+
+Leverage Points for our Adolescent HIV model
+
+```{r, warning=FALSE}
+# Transformed Adolescent HIV model 
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, 
+           data=df_africa)
+
+# Identifying unusual points
+h <- hatvalues(lmHIVt)
+
+# Creating the Half-norm plot
+halfnorm(h, nlab = 2, labs=df_africa[-1,1], ylab = "leverage")
+```
+
+```{r, warning=FALSE}
+# index plot of leverage values
+infIndexPlot(lmHIVt, vars = "hat")
+```
+
+Our highest leverage points are the Central African Republic and Mauritius and our highest points on the diagnostic plot are 35 and 122, corresponding to the Central African Republic and Mozambique. So, both tests identified the Central African Republic as a potential leverage point.
+
+Outliers for our Adolescent HIV model
+
+```{r, warning=FALSE}
+# Performing outlier check using Bonferroni correction
+outlierTest(lmHIVt)
+
+# Index plot of the studentized residuals and Bonferroni p values
+infIndexPlot(lmHIVt, vars=c("Studentized","Bonf"))
+```
+
+According to the outlier test and the Diagnostic plots, we have Mauritania as the only outlier identified by both. 
+
+Influential Points for our Adolescent HIV model
+
+```{r, warning=FALSE}
+# Getting Cooks Statistics for our Adolescent HIV data
+cook <- cooks.distance(lmHIVt)
+halfnorm(cook, n = 3, labs = df_africa[-1,1], ylab = "Cook's distances")
+
+infIndexPlot(lmHIVt, var = "Cook", id = list(n = 3))
+```
+From the Cooks Statistics and distances plots, it appears as if Mauritania is an influential point.
+
+Now, to see the impact of the Central African Republic and Mauritania the countries identified by our tests, we will compare two models side by side.
+
+```{r, warning=FALSE}
+# Creating our two models
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, 
+           data=df_africa)
+lmHIVt_minus_CAR_Mauritania<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+
+                                  JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, 
+                                data=df_africa, subset=(Country !="Central African Republic" 
+                                                        & Country !="Mauritania"))
+
+# Comparing the coefficients for the two models side-by-side
+compareCoefs(lmHIVt, lmHIVt_minus_CAR_Mauritania)
+```
+From comparing the two models, we see similar coefficients, so we will leave these two observations in our data set. 
+
+### Identifying Influential Observations for our Under 5 Child Mortality model
+
+Leverage Points for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+# Our transformed model 
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+I(FamilyPlanningSatpct^(1/2)), 
+                 data=df_africa)
+
+# Identifying unusual points
+h <- hatvalues(lmChildMortt)
+
+# Creating the Half-norm plot
+halfnorm(h, nlab = 2, labs=df_africa[-1,1], ylab = "leverage")
+
+# Index plot of leverage values
+infIndexPlot(lmChildMortt, vars = "hat")
+```
+Our highest leverage points are the Gabon and Mauritius and our highest points on the diagnostic plot are 66 and 114, corresponding to the Gabon and Mauritius. So, both tests identified Gabon and Mauritius as potential leverage points.
+
+Outliers for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+# Performing outlier check using Bonferroni correction
+outlierTest(lmChildMortt)
+
+# Index plot of the studentized residuals and Bonferroni p values
+infIndexPlot(lmChildMortt, vars=c("Studentized","Bonf"))
+```
+
+According to the outlier tests, we have Nigeria as the only outlier identified by both. 
+
+Influential Points for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+# Getting Cooks Statistics for our Adolescent HIV data
+cook <- cooks.distance(lmChildMortt)
+halfnorm(cook, n = 3, labs = df_africa[-1,1], ylab = "Cook's distances")
+
+infIndexPlot(lmChildMortt, var = "Cook", id = list(n = 3))
+```
+
+From the Cooks Statistics and distances plots, it appears as if Eritrea is an influential point.
+
+Now, to see the impact of and Mauritius and Eritrea, the countries identified by our tests, we will compare two models side by side.
+
+```{r, warning=FALSE}
+# Creating our two models
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                   I(FamilyPlanningSatpct^(1/2)), data=df_africa)
+lmChildMortt_minus_Erit_Maur<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                                   I(FamilyPlanningSatpct^(1/2)), 
+                                 data=df_africa, subset=(Country!="Eritrea" & Country !="Mauritius"))
+
+# Comparing the coefficients for the two models side-by-side
+compareCoefs(lmChildMortt, lmChildMortt_minus_Erit_Maur)
+```
+From the comparison of regressor coefficients, both models have very similar regressor coefficients, so we will leave the two influential points in the data set. 
+
+### Checking Error Assumptions
+
+Checking mean-zero error and nonconstant variance assumptions for our Adolescent HIV model
+
+```{r, warning=FALSE}
+# Creating our transformed model
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, data=df_africa)
+
+# Plot of residuals versus fitted values
+residualPlot(lmHIVt, quadratic = FALSE)
+
+# Plot of residuals versus fitted values
+plot(lmHIVt, which = 1)
+
+# Plot of residuals versus predictors
+residualPlots(lmHIVt, quadratic = FALSE, fitted = FALSE, tests = FALSE)
+```
+
+Though we have a few higher points, such as Mauritania and Niger, it our plots look overall symmetric and random. 
+
+Checking normal error assumption for our Adolescent HIV model
+
+```{r, warning=FALSE}
+library(car)
+
+# Our model
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+JustificationWifeBeatingFemalepct+
+             FamilyPlanningSatpct, data=df_africa)
+
+# QQ Plot with Studentized Residuals
+qqPlot(lmHIVt)
+
+# QQ Plot with Standardized Residuals
+plot(lmHIVt, which=2)
+
+# Shapiro Test
+shapiro.test(residuals(lmHIVt))
+```
+Here, we have run into a problem. It seems as if countries such as Mauritania are making it so we fail the non-constant variance assumption. However, after looking at df_africa, we see what is happening. Several countries have very small Adolescent HIV prevalences, almost 0. So, if we remove those from our model, as we are mainly interested in the impact of Women's Empowerment on Adolescent HIV, we will see what happens.
+
+Checking mean-zero error and nonconstant variance assumptions for our Adolescent HIV model without the three countries with the lowest (almost 0%) Adolescent HIV
+
+```{r, warning=FALSE}
+# Creating our transformed model without the lowest Adolescent HIV countries
+lmHIVt_MinusSmallHIV<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+
+                           JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, 
+                         data=df_africa, subset=(Country !="Mauritania" & Country!="Niger"
+                                                 & Country !="Burkina Faso"))
+
+# Plot of residuals versus fitted values
+residualPlot(lmHIVt_MinusSmallHIV, quadratic = FALSE)
+
+# Plot of residuals versus fitted values
+plot(lmHIVt_MinusSmallHIV, which = 1)
+
+# Plot of residuals versus predictors
+residualPlots(lmHIVt_MinusSmallHIV, quadratic = FALSE, fitted = FALSE, tests = FALSE)
+```
+We still pass our mean-zero error and nonconstant variance assumptions.
+
+Checking normal error assumption for our Adolescent HIV model without the three countries with the lowest (almost 0%) Adolescent HIV
+
+```{r, warning=FALSE}
+library(car)
+
+# Our model without the lowest Adolescent HIV countries
+lmHIVt_MinusSmallHIV<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+
+                           JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, 
+                         data=df_africa, subset=(Country !="Mauritania" & Country!="Niger"
+                                                 & Country !="Burkina Faso"))
+
+# QQ Plot with Studentized Residuals
+qqPlot(lmHIVt_MinusSmallHIV)
+
+# QQ Plot with Standardized Residuals
+plot(lmHIVt_MinusSmallHIV, which=2)
+
+# Shapiro Test
+shapiro.test(residuals(lmHIVt_MinusSmallHIV))
+```
+
+All of our tests looks far better and our Shapiro tests returns a p-value greater than 0.05. Thus, there is insufficient evidence to conclude that the residuals come from a non-normal distribution. However, we note that the various graphs do indicate a possible violation of the normal errors assumptions. 
+
+To remain faithful to the dataset, we will keep these points in. Though our normal errors assumption is better with these three countries removed, we will continue with them in and note at the end how we will need to treat our confidence intervals.
+
+Checking autocorrelated error assumption for our Adolescent HIV model
+
+```{r, warning=FALSE}
+# Our model
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+
+             JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, data=df_africa)
+
+# Durbin-Watson Test
+lmtest::dwtest(lmHIVt)
+```
+
+Because the p-value is greater than 0.05, there is insufficient evidence to reject the null hypothesis that there is no correlation between the errors.
+
+Checking mean-zero error and nonconstant variance assumptions for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+# Creating our transformed model
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                   I(FamilyPlanningSatpct^(1/2)), data=df_africa)
+
+# Plot of residuals versus fitted values
+residualPlot(lmChildMortt, quadratic = FALSE)
+
+# Plot of residuals versus fitted values
+plot(lmChildMortt, which = 1)
+
+# Plot of residuals versus predictors
+residualPlots(lmChildMortt, quadratic = FALSE, fitted = FALSE, tests = FALSE)
+```
+These plots generally look good and support our error assumptions.
+
+Checking normal error assumption for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+library(car)
+
+# Creating our transformed model
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                   I(FamilyPlanningSatpct^(1/2)), data=df_africa)
+
+# QQ Plot with Studentized Residuals
+qqPlot(lmChildMortt)
+
+# QQ Plot with Standardized Residuals
+plot(lmChildMortt, which=2)
+
+# Shapiro Test
+shapiro.test(residuals(lmChildMortt))
+```
+
+From our plots and tests, we can say that there is insufficient evidence to conclude the residuals come form a non-normal distribution.
+
+Checking autocorrelated error assumption for our Under 5 Child Mortality model
+
+```{r, warning=FALSE}
+# Our model
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                   I(FamilyPlanningSatpct^(1/2)), data=df_africa)
+
+# Durbin-Watson Test
+lmtest::dwtest(lmChildMortt)
+```
+
+Because the p-value is greater than 0.05, there is insufficient evidence to reject the null hypothersis that there is no correlation between the errors.
+
+## Interpreting Results
+
+### Interpreting results for our Adolescent HIV model
+
+#### The Fitted Equation and Coefficient Interpretation
+
+```{r, warning=FALSE}
+# Our model
+lmHIVt<-lm(log(AdolescentHIVpct)~AdolescentBirthRate+
+             JustificationWifeBeatingFemalepct+FamilyPlanningSatpct, data=df_africa)
+
+summary(lmHIVt)
+```
+First, we must write down the Fitted Equation:
+
+$\hat{log(AdolescentHIVpct)}=-3.974014+0.013354 (AdolescentBirthRate)  -0.006902 (JustificationWifeBeatingFemalepct) +  0.051221 (FamilyPlanningSatpct)$
+
+Now, we note that this is a Log-level model. We interpret the coefficients one-by-one, assuming that the other regressors do not change.
+
+A unit increase of AdolescentBirthRate will result in a $e^{0.013354}=1.01344$ multiplicative change in Adolescent HIV, or a $1.344$% increase in Adolescent HIV prevalence. 
+
+In plain terms, if the annual number of births to women 15 to 19 years of age per 1,000 women in that age group increases by 1, Adolescent HIV prevalence will increase by $1.344$%.
+
+A 1 percent increase JustificationWifeBeatingFemalepct will result in a $e^{-0.006902}=0.993122$ multiplicative change in Adolescent HIV, or a $0.6878$% decrease in Adolescent HIV percent. 
+
+In plain terms, if the percent of women who agree that domestic violence is justified increases by 1 percent, Adolescent HIV will increase by $0.6878$%.
+
+A unit increase of FamilyPlanningSatpct will result in a $e^{0.051221}=1.05265$ multiplicative change in Adolescent HIV, or a $5.265$% increase in Adolescent HIV percent. 
+
+In plain terms, if the percent of women who are satisfied by the available family planning increases by 1 percent, the Adolescent HIV prevalence will increase by $5.265$%.
+
+To aid in our interpretation, we will look at the effects plots, which are plotted on the original axes.
+
+Effects Plots
+
+```{r, warning=FALSE}
+library(effects)
+
+# Effects plots
+plot(Effect(c("AdolescentBirthRate"), mod =lmHIVt), 
+     main="Effect Plot for AdolescentBirthRate on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+
+plot(Effect(c("JustificationWifeBeatingFemalepct"), mod =lmHIVt), 
+     main="Effect Plot for JustificationWifeBeatingFemalepct on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+
+plot(Effect(c("FamilyPlanningSatpct"), mod =lmHIVt), 
+     main="Effect Plot for FamilyPlanningSatpct on AdolescentHIVpct", 
+     axes=list(y=list(transform=exp,lab="AdolescentHIVpct")))
+```
+From the Effects Plot for AdolescentBirthRate, we see that there is a positive correlation between the two variables and that the effect is largest as the adolescent birth rate increases toward higher percentages.
+
+From the Effects Plot for JustificationWifeBeatingFemalepct, we see that there is a smaller negative correlation between the two variables.
+
+From the Effects Plot for FamilyPlanningSatpct, we see that there is a positive correlation between the two variables, with the effect becoming significantly more important as Family Planning Satisfaction reaches higher percentages.
+
+Now, we will explore our confidence intervals.
+
+#### Confidence Intervals
+
+```{r, warning=FALSE}
+# Confidence Intervals
+(confint(lmHIVt))
+```
+
+We note here that because we have problems with our model structure, such as the normal errors assumption, we have less confidence in the validity of these intervals. However, because of the Central Limit Theorem, as the number of countries increases, (n increases), we know that these confidence intervals will become more accurate.
+
+### Interpreting results for our Under 5 Child Mortality model
+
+#### The Fitted Equation and Coefficient Interpretation
+
+```{r, warning=FALSE}
+# Our model
+lmChildMortt<-lm(Under5ChildMort~Urbanpct+log(AdolescentBirthRate)+
+                   I(FamilyPlanningSatpct^(1/2)), data=df_africa)
+
+summary(lmChildMortt)
+```
+The fitted equation for our Under 5 Child Mortality Model is: 
+
+$\hat{Under5ChildMort}=-19.8330-0.2254 (Urbanpct) +32.6649 log(AdolescentBirthRate) -8.0705 \sqrt{FamilyPlanningSatpct}$
+
+We will interpret each regressor coefficient in turn, assuming that the other regressors do not change.
+
+We have not transformed the Urbanpct regressor, so this is Level-level in this regressor. Thus, a change of 1 unit in the Urbanpct will result in a decrease of $-0.2254$ in Under 5 Child Mortality. If the percentage of urban population increase by 1 percent, the Under 5 Child Mortality of that country will decrease by $0.2254$.
+
+In the AdolescentBirthRate regressor, we have a Level-log model. Thus, a change of 1 percent in the AdolescentBirthRate regressor will result in a $32.6649/100=0.326649$ increase in Under 5 Child Mortality. If the Adolescent Birth Rate increases by 1 percent, then the Under 5 Child Mortality will increase by $0.326649$.
+
+Square Root FamilyPlanningSatpct is more difficult to interpret numerically, but the Effects Plots will help us. Note that we must transform back to the original scales for AdolescentBirthRate and FamilyPlanningSatpct.
+
+Effects Plots
+
+```{r, warning=FALSE}
+library(effects)
+
+# Effects plots
+plot(Effect(c("Urbanpct"), mod =lmChildMortt), 
+     main="Effect Plot for Urbanpct on Under5ChildMort", 
+     axes=list(y=list(lab="Under5ChildMort")))
+
+plot(Effect(c("AdolescentBirthRate"), mod=lmChildMortt), 
+     main="Effect Plot for AdolescentBirthRate on Under5ChildMort", 
+     axes=list(y=list(lab="Under5ChildMort"),x=list(AdolescentBirthRate=list(transform=list(
+         trans=log, inverse=function(x) exp(x))
+         ))))
+
+plot(Effect(c("FamilyPlanningSatpct"), mod=lmChildMortt), 
+     main="Effect Plot for FamilyPlanningSatpct on Under5ChildMort", axes=list(y=list(lab="Under5ChildMort"),x=list(FamilyPlanningSatpct=list(transform=list(
+         trans=sqrt, inverse=function(x) x^2))
+         )))
+```
+From the effects plot for Urbanpct, we see a negative correlation between the variables.
+
+From the effects plot for AdolescentBirthRate, we see a positive correlation between the variables.
+
+From the effects plot for FamilyPlanningSatpct, we see a negative correlation between the variables.
+
+Now, we will explore our confidence intervals.
+
+#### Confidence Intervals
+
+```{r, warning=FALSE}
+# Confidence Intervals
+(confint(lmChildMortt))
+```
+
